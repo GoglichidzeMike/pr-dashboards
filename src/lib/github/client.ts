@@ -41,9 +41,14 @@ const retryLink = new RetryLink({
 });
 
 // Error handling link
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors) {
-    graphQLErrors.forEach(({ message, locations, path, extensions }) => {
+const errorLink = onError((error: any) => {
+  if (error.graphQLErrors) {
+    error.graphQLErrors.forEach((err: any) => {
+      const message = err.message || '';
+      const locations = err.locations;
+      const path = err.path;
+      const extensions = err.extensions;
+      
       console.error(
         `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
       );
@@ -59,7 +64,8 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
     });
   }
 
-  if (networkError) {
+  if (error.networkError) {
+    const networkError = error.networkError;
     console.error(`[Network error]: ${networkError}`);
     
     // Handle 401 Unauthorized
@@ -106,7 +112,13 @@ export const apolloClient = new ApolloClient({
           
           // Fallback: construct from owner and name
           const owner = readField('owner', object);
-          const ownerLogin = owner && typeof owner === 'object' ? readField('login', owner) : null;
+          let ownerLogin: string | null = null;
+          if (owner && typeof owner === 'object' && !Array.isArray(owner) && 'login' in owner) {
+            const login = readField('login', owner as any);
+            if (typeof login === 'string') {
+              ownerLogin = login;
+            }
+          }
           const name = readField('name', object);
           
           if (ownerLogin && name) {

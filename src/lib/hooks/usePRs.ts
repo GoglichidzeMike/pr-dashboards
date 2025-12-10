@@ -197,7 +197,7 @@ export function usePRs(repos: string[], pollInterval: number = 60000) {
           }
         });
       } else {
-        console.warn(`No pullRequests.nodes found for repo ${repo} at key ${repoKey}`, repoData);
+        console.warn(`No pullRequests.nodes found for repo ${repo} at alias ${alias}`, repoData);
       }
     });
 
