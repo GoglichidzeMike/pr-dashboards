@@ -11,9 +11,10 @@ import { cn } from '@/lib/utils';
 
 interface PRCardProps {
   pr: PullRequest;
+  onClick?: () => void;
 }
 
-export const PRCard: React.FC<PRCardProps> = memo(({ pr }) => {
+export const PRCard: React.FC<PRCardProps> = memo(({ pr, onClick }) => {
   const timeAgo = formatDistanceToNow(new Date(pr.updatedAt), { addSuffix: true });
 
   // Determine review status
@@ -55,8 +56,19 @@ export const PRCard: React.FC<PRCardProps> = memo(({ pr }) => {
     }
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't open modal if clicking on a link or button
+    if ((e.target as HTMLElement).closest('a, button')) {
+      return;
+    }
+    onClick?.();
+  };
+
   return (
-    <Card className="hover:shadow-md transition-shadow py-4">
+    <Card 
+      className="hover:shadow-md transition-shadow py-4 cursor-pointer" 
+      onClick={handleCardClick}
+    >
       <CardContent className='px-4'>
         <div className="flex items-start justify-between gap-3">
           <div className="flex-1 min-w-0">
@@ -68,6 +80,7 @@ export const PRCard: React.FC<PRCardProps> = memo(({ pr }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-xs font-medium hover:underline flex items-center gap-1 text-muted-foreground"
+                onClick={(e) => e.stopPropagation()}
               >
                 {pr.repository.nameWithOwner}#{pr.number}
                 <ExternalLink className="h-3 w-3" />

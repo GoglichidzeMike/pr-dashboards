@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import { PR_DETAILS_FRAGMENT, REPOSITORY_BASIC_FRAGMENT } from './fragments';
+import { PR_DETAILS_FRAGMENT, PR_FULL_DETAILS_FRAGMENT, REPOSITORY_BASIC_FRAGMENT } from './fragments';
 
 /**
  * Query to get the current viewer's login
@@ -136,5 +136,19 @@ export const GET_PRS_FOR_REPO = gql`
     }
   }
   ${PR_DETAILS_FRAGMENT}
+`;
+
+/**
+ * Query to get full details for a specific PR
+ */
+export const GET_PR_DETAILS = gql`
+  query GetPRDetails($owner: String!, $name: String!, $number: Int!) {
+    repository(owner: $owner, name: $name) {
+      pullRequest(number: $number) {
+        ...PRFullDetails
+      }
+    }
+  }
+  ${PR_FULL_DETAILS_FRAGMENT}
 `;
 

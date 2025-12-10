@@ -1,15 +1,18 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { usePRs, PullRequest } from '@/lib/hooks/usePRs';
 import { useFilter } from '@/contexts/FilterContext';
 import { PRCard } from './PRCard';
+import { PRDetailsModal } from './PRDetailsModal';
 import { PRGroupSkeleton } from './PRGroupSkeleton';
 import { getPreferences } from '@/lib/storage/preferences';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export const PRList: React.FC = () => {
+  const [selectedPR, setSelectedPR] = useState<PullRequest | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { selectedRepos, showDrafts, reviewStatus, ciStatus } = useFilter();
   const preferences = getPreferences();
   const pollInterval = preferences.pollingInterval || 60000;
@@ -165,12 +168,24 @@ export const PRList: React.FC = () => {
             </div>
             <div className="space-y-2 pl-2">
               {group.prs.map((pr) => (
-                <PRCard key={pr.id} pr={pr} />
+                <PRCard
+                  key={pr.id}
+                  pr={pr}
+                  onClick={() => {
+                    setSelectedPR(pr);
+                    setIsModalOpen(true);
+                  }}
+                />
               ))}
             </div>
           </div>
         ))}
       </div>
+      <PRDetailsModal
+        pr={selectedPR}
+        open={isModalOpen}
+        onOpenChange={setIsModalOpen}
+      />
     </div>
   );
 };
