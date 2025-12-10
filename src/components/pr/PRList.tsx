@@ -4,8 +4,10 @@ import { useMemo } from 'react';
 import { usePRs, PullRequest } from '@/lib/hooks/usePRs';
 import { useFilter } from '@/contexts/FilterContext';
 import { PRCard } from './PRCard';
+import { PRGroupSkeleton } from './PRGroupSkeleton';
 import { getPreferences } from '@/lib/storage/preferences';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const PRList: React.FC = () => {
   const { selectedRepos, showDrafts, reviewStatus, ciStatus } = useFilter();
@@ -98,9 +100,15 @@ export const PRList: React.FC = () => {
 
   if (loading && pullRequests.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center h-full p-8">
-        <div className="mb-4 inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-current border-r-transparent"></div>
-        <p className="text-sm text-muted-foreground">Loading pull requests...</p>
+      <div className="space-y-6 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="space-y-4">
+          <PRGroupSkeleton cardCount={3} />
+          <PRGroupSkeleton cardCount={2} />
+          <PRGroupSkeleton cardCount={4} />
+        </div>
       </div>
     );
   }
@@ -141,8 +149,11 @@ export const PRList: React.FC = () => {
         <h2 className="text-2xl font-bold">
           Pull Requests ({totalPRs})
         </h2>
-        {loading && (
-          <span className="text-sm text-muted-foreground">Refreshing...</span>
+        {loading && pullRequests.length > 0 && (
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="h-3 w-3 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <span>Refreshing...</span>
+          </div>
         )}
       </div>
       <div className="space-y-4">

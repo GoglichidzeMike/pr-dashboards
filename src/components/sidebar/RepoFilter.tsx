@@ -9,10 +9,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, CheckSquare, Square } from 'lucide-react';
+import { RepoGroupSkeleton } from './RepoGroupSkeleton';
 
 export const RepoFilter: React.FC = () => {
   const { filterType, selectedRepos, toggleRepo, deselectAllRepos } = useFilter();
-  const { personalRepos, organizations, allRepos, viewerLogin } = useRepos();
+  const { personalRepos, organizations, allRepos, viewerLogin, loading } = useRepos();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Filter and group repos based on selected organization filter
@@ -147,7 +148,13 @@ export const RepoFilter: React.FC = () => {
       </div>
       <ScrollArea className="h-[300px] rounded-md border">
         <div className="space-y-1 p-2">
-          {groupedRepos.length === 0 ? (
+          {loading ? (
+            <>
+              <RepoGroupSkeleton itemCount={4} />
+              <RepoGroupSkeleton itemCount={3} />
+              <RepoGroupSkeleton itemCount={2} />
+            </>
+          ) : groupedRepos.length === 0 ? (
             <div className="py-4 text-center text-sm text-muted-foreground">
               {searchQuery ? 'No repositories found' : 'No repositories available'}
             </div>
