@@ -11,6 +11,7 @@ import { PRDescription } from './PRDescription';
 import { PRComments } from './PRComments';
 import { PRFiles } from './PRFiles';
 import { PRTimeline } from './PRTimeline';
+import { PRActions } from './PRActions';
 import { PullRequest } from '@/lib/hooks/usePRs';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -25,7 +26,7 @@ export const PRDetailsModal: React.FC<PRDetailsModalProps> = ({ pr, open, onOpen
     ? [pr.repository.owner.login, pr.repository.name, pr.number]
     : [null, null, null];
 
-  const { pr: prDetails, loading, error } = usePRDetails(owner, name, number);
+  const { pr: prDetails, loading, error, refetch } = usePRDetails(owner, name, number);
 
   // Close modal on Escape key
   useEffect(() => {
@@ -77,10 +78,13 @@ export const PRDetailsModal: React.FC<PRDetailsModalProps> = ({ pr, open, onOpen
                 )}
               </div>
             </div>
-            <Avatar className="h-10 w-10 flex-shrink-0">
-              <AvatarImage src={pr.author.avatarUrl} alt={pr.author.login} />
-              <AvatarFallback>{pr.author.login[0].toUpperCase()}</AvatarFallback>
-            </Avatar>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <PRActions pr={pr} onSuccess={() => refetch()} />
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={pr.author.avatarUrl} alt={pr.author.login} />
+                <AvatarFallback>{pr.author.login[0].toUpperCase()}</AvatarFallback>
+              </Avatar>
+            </div>
           </div>
         </DialogHeader>
 

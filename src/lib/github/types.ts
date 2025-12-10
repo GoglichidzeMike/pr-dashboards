@@ -36169,7 +36169,7 @@ export type PrFullDetailsFragment = { __typename?: 'PullRequest', id: string, nu
        | null } | null> | null } | null, statusCheckRollup?: { __typename?: 'StatusCheckRollup', state: StatusState, contexts: { __typename?: 'StatusCheckRollupContextConnection', nodes?: Array<
         | { __typename?: 'CheckRun', name: string, conclusion?: CheckConclusionState | null, status: CheckStatusState, detailsUrl?: string | null }
         | { __typename?: 'StatusContext', state: StatusState, context: string, description?: string | null, targetUrl?: string | null }
-       | null> | null } } | null, labels?: { __typename?: 'LabelConnection', nodes?: Array<{ __typename?: 'Label', id: string, name: string, color: string } | null> | null } | null, commits: { __typename?: 'PullRequestCommitConnection', nodes?: Array<{ __typename?: 'PullRequestCommit', commit: { __typename?: 'Commit', oid: any, messageHeadline: string, message: string, url: string, author?: { __typename?: 'GitActor', name?: string | null, email?: string | null, date?: any | null, user?: { __typename?: 'User', login: string, avatarUrl: string } | null } | null } } | null> | null }, files?: { __typename?: 'PullRequestChangedFileConnection', nodes?: Array<{ __typename?: 'PullRequestChangedFile', path: string, additions: number, deletions: number, changeType: PatchStatus } | null> | null } | null, comments: { __typename?: 'IssueCommentConnection', nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, bodyText: string, bodyHTML: string, createdAt: string, isMinimized: boolean, minimizedReason?: string | null, author?:
+       | null> | null } } | null, labels?: { __typename?: 'LabelConnection', nodes?: Array<{ __typename?: 'Label', id: string, name: string, color: string } | null> | null } | null, commits: { __typename?: 'PullRequestCommitConnection', nodes?: Array<{ __typename?: 'PullRequestCommit', commit: { __typename?: 'Commit', oid: any, messageHeadline: string, message: string, url: string, author?: { __typename?: 'GitActor', name?: string | null, email?: string | null, date?: any | null, user?: { __typename?: 'User', login: string, avatarUrl: string } | null } | null } } | null> | null }, files?: { __typename?: 'PullRequestChangedFileConnection', nodes?: Array<{ __typename?: 'PullRequestChangedFile', path: string, additions: number, deletions: number, changeType: PatchStatus } | null> | null } | null, comments: { __typename?: 'IssueCommentConnection', totalCount: number, nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, bodyText: string, bodyHTML: string, createdAt: string, isMinimized: boolean, minimizedReason?: string | null, author?:
         | { __typename?: 'Bot', login: string, avatarUrl: string }
         | { __typename?: 'EnterpriseUserAccount', login: string, avatarUrl: string }
         | { __typename?: 'Mannequin', login: string, avatarUrl: string }
@@ -36280,6 +36280,95 @@ export type RepositoryBasicFragment = { __typename?: 'Repository', id: string, n
     | { __typename?: 'User', id: string, login: string, avatarUrl: string }
    };
 
+export type SubmitPrReviewMutationVariables = Exact<{
+  pullRequestId: Scalars['ID']['input'];
+  event: PullRequestReviewEvent;
+  body?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type SubmitPrReviewMutation = { __typename?: 'Mutation', submitPullRequestReview?: { __typename?: 'SubmitPullRequestReviewPayload', pullRequestReview?: { __typename?: 'PullRequestReview', id: string, state: PullRequestReviewState, body: string, author?:
+        | { __typename?: 'Bot', login: string, avatarUrl: string }
+        | { __typename?: 'EnterpriseUserAccount', login: string, avatarUrl: string }
+        | { __typename?: 'Mannequin', login: string, avatarUrl: string }
+        | { __typename?: 'Organization', login: string, avatarUrl: string }
+        | { __typename?: 'User', login: string, avatarUrl: string }
+       | null } | null } | null };
+
+export type AddPrCommentMutationVariables = Exact<{
+  subjectId: Scalars['ID']['input'];
+  body: Scalars['String']['input'];
+}>;
+
+
+export type AddPrCommentMutation = { __typename?: 'Mutation', addComment?: { __typename?: 'AddCommentPayload', commentEdge?: { __typename?: 'IssueCommentEdge', node?: { __typename?: 'IssueComment', id: string, body: string, bodyHTML: string, createdAt: string, author?:
+          | { __typename?: 'Bot', login: string, avatarUrl: string }
+          | { __typename?: 'EnterpriseUserAccount', login: string, avatarUrl: string }
+          | { __typename?: 'Mannequin', login: string, avatarUrl: string }
+          | { __typename?: 'Organization', login: string, avatarUrl: string }
+          | { __typename?: 'User', login: string, avatarUrl: string }
+         | null } | null } | null } | null };
+
+export type MergePrMutationVariables = Exact<{
+  pullRequestId: Scalars['ID']['input'];
+  mergeMethod: PullRequestMergeMethod;
+  commitHeadline?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type MergePrMutation = { __typename?: 'Mutation', mergePullRequest?: { __typename?: 'MergePullRequestPayload', pullRequest?: { __typename?: 'PullRequest', id: string, merged: boolean, mergedAt?: string | null, state: PullRequestState } | null } | null };
+
+export type ClosePrMutationVariables = Exact<{
+  pullRequestId: Scalars['ID']['input'];
+}>;
+
+
+export type ClosePrMutation = { __typename?: 'Mutation', closePullRequest?: { __typename?: 'ClosePullRequestPayload', pullRequest?: { __typename?: 'PullRequest', id: string, closed: boolean, closedAt?: string | null, state: PullRequestState } | null } | null };
+
+export type ReopenPrMutationVariables = Exact<{
+  pullRequestId: Scalars['ID']['input'];
+}>;
+
+
+export type ReopenPrMutation = { __typename?: 'Mutation', reopenPullRequest?: { __typename?: 'ReopenPullRequestPayload', pullRequest?: { __typename?: 'PullRequest', id: string, closed: boolean, state: PullRequestState } | null } | null };
+
+export type AddLabelsToPrMutationVariables = Exact<{
+  labelableId: Scalars['ID']['input'];
+  labelIds: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
+}>;
+
+
+export type AddLabelsToPrMutation = { __typename?: 'Mutation', addLabelsToLabelable?: { __typename?: 'AddLabelsToLabelablePayload', labelable?:
+      | { __typename?: 'Discussion' }
+      | { __typename?: 'Issue' }
+      | { __typename?: 'PullRequest', id: string, labels?: { __typename?: 'LabelConnection', nodes?: Array<{ __typename?: 'Label', id: string, name: string, color: string } | null> | null } | null }
+     | null } | null };
+
+export type RemoveLabelsFromPrMutationVariables = Exact<{
+  labelableId: Scalars['ID']['input'];
+  labelIds: Array<Scalars['ID']['input']> | Scalars['ID']['input'];
+}>;
+
+
+export type RemoveLabelsFromPrMutation = { __typename?: 'Mutation', removeLabelsFromLabelable?: { __typename?: 'RemoveLabelsFromLabelablePayload', labelable?:
+      | { __typename?: 'Discussion' }
+      | { __typename?: 'Issue' }
+      | { __typename?: 'PullRequest', id: string, labels?: { __typename?: 'LabelConnection', nodes?: Array<{ __typename?: 'Label', id: string, name: string, color: string } | null> | null } | null }
+     | null } | null };
+
+export type RequestReviewersMutationVariables = Exact<{
+  pullRequestId: Scalars['ID']['input'];
+  userIds?: InputMaybe<Array<Scalars['ID']['input']> | Scalars['ID']['input']>;
+}>;
+
+
+export type RequestReviewersMutation = { __typename?: 'Mutation', requestReviews?: { __typename?: 'RequestReviewsPayload', pullRequest?: { __typename?: 'PullRequest', id: string, reviewRequests?: { __typename?: 'ReviewRequestConnection', nodes?: Array<{ __typename?: 'ReviewRequest', requestedReviewer?:
+            | { __typename?: 'Bot' }
+            | { __typename?: 'Mannequin' }
+            | { __typename?: 'Team' }
+            | { __typename?: 'User', login: string, avatarUrl: string }
+           | null } | null> | null } | null } | null } | null };
+
 export type GetViewerQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -36358,7 +36447,7 @@ export type GetPrDetailsQuery = { __typename?: 'Query', repository?: { __typenam
            | null } | null> | null } | null, statusCheckRollup?: { __typename?: 'StatusCheckRollup', state: StatusState, contexts: { __typename?: 'StatusCheckRollupContextConnection', nodes?: Array<
             | { __typename?: 'CheckRun', name: string, conclusion?: CheckConclusionState | null, status: CheckStatusState, detailsUrl?: string | null }
             | { __typename?: 'StatusContext', state: StatusState, context: string, description?: string | null, targetUrl?: string | null }
-           | null> | null } } | null, labels?: { __typename?: 'LabelConnection', nodes?: Array<{ __typename?: 'Label', id: string, name: string, color: string } | null> | null } | null, commits: { __typename?: 'PullRequestCommitConnection', nodes?: Array<{ __typename?: 'PullRequestCommit', commit: { __typename?: 'Commit', oid: any, messageHeadline: string, message: string, url: string, author?: { __typename?: 'GitActor', name?: string | null, email?: string | null, date?: any | null, user?: { __typename?: 'User', login: string, avatarUrl: string } | null } | null } } | null> | null }, files?: { __typename?: 'PullRequestChangedFileConnection', nodes?: Array<{ __typename?: 'PullRequestChangedFile', path: string, additions: number, deletions: number, changeType: PatchStatus } | null> | null } | null, comments: { __typename?: 'IssueCommentConnection', nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, bodyText: string, bodyHTML: string, createdAt: string, isMinimized: boolean, minimizedReason?: string | null, author?:
+           | null> | null } } | null, labels?: { __typename?: 'LabelConnection', nodes?: Array<{ __typename?: 'Label', id: string, name: string, color: string } | null> | null } | null, commits: { __typename?: 'PullRequestCommitConnection', nodes?: Array<{ __typename?: 'PullRequestCommit', commit: { __typename?: 'Commit', oid: any, messageHeadline: string, message: string, url: string, author?: { __typename?: 'GitActor', name?: string | null, email?: string | null, date?: any | null, user?: { __typename?: 'User', login: string, avatarUrl: string } | null } | null } } | null> | null }, files?: { __typename?: 'PullRequestChangedFileConnection', nodes?: Array<{ __typename?: 'PullRequestChangedFile', path: string, additions: number, deletions: number, changeType: PatchStatus } | null> | null } | null, comments: { __typename?: 'IssueCommentConnection', totalCount: number, nodes?: Array<{ __typename?: 'IssueComment', id: string, body: string, bodyText: string, bodyHTML: string, createdAt: string, isMinimized: boolean, minimizedReason?: string | null, author?:
             | { __typename?: 'Bot', login: string, avatarUrl: string }
             | { __typename?: 'EnterpriseUserAccount', login: string, avatarUrl: string }
             | { __typename?: 'Mannequin', login: string, avatarUrl: string }
@@ -36638,6 +36727,7 @@ export const PrFullDetailsFragmentDoc = gql`
     }
   }
   comments(first: 100) {
+    totalCount
     nodes {
       id
       body
@@ -36749,6 +36839,351 @@ export const RepositoryBasicFragmentDoc = gql`
   url
 }
     `;
+export const SubmitPrReviewDocument = gql`
+    mutation SubmitPRReview($pullRequestId: ID!, $event: PullRequestReviewEvent!, $body: String) {
+  submitPullRequestReview(
+    input: {pullRequestId: $pullRequestId, event: $event, body: $body}
+  ) {
+    pullRequestReview {
+      id
+      state
+      body
+      author {
+        login
+        avatarUrl
+      }
+    }
+  }
+}
+    `;
+export type SubmitPrReviewMutationFn = Apollo.MutationFunction<SubmitPrReviewMutation, SubmitPrReviewMutationVariables>;
+
+/**
+ * __useSubmitPrReviewMutation__
+ *
+ * To run a mutation, you first call `useSubmitPrReviewMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSubmitPrReviewMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [submitPrReviewMutation, { data, loading, error }] = useSubmitPrReviewMutation({
+ *   variables: {
+ *      pullRequestId: // value for 'pullRequestId'
+ *      event: // value for 'event'
+ *      body: // value for 'body'
+ *   },
+ * });
+ */
+export function useSubmitPrReviewMutation(baseOptions?: Apollo.MutationHookOptions<SubmitPrReviewMutation, SubmitPrReviewMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SubmitPrReviewMutation, SubmitPrReviewMutationVariables>(SubmitPrReviewDocument, options);
+      }
+export type SubmitPrReviewMutationHookResult = ReturnType<typeof useSubmitPrReviewMutation>;
+export type SubmitPrReviewMutationResult = Apollo.MutationResult<SubmitPrReviewMutation>;
+export type SubmitPrReviewMutationOptions = Apollo.BaseMutationOptions<SubmitPrReviewMutation, SubmitPrReviewMutationVariables>;
+export const AddPrCommentDocument = gql`
+    mutation AddPRComment($subjectId: ID!, $body: String!) {
+  addComment(input: {subjectId: $subjectId, body: $body}) {
+    commentEdge {
+      node {
+        id
+        body
+        bodyHTML
+        createdAt
+        author {
+          login
+          avatarUrl
+        }
+      }
+    }
+  }
+}
+    `;
+export type AddPrCommentMutationFn = Apollo.MutationFunction<AddPrCommentMutation, AddPrCommentMutationVariables>;
+
+/**
+ * __useAddPrCommentMutation__
+ *
+ * To run a mutation, you first call `useAddPrCommentMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddPrCommentMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addPrCommentMutation, { data, loading, error }] = useAddPrCommentMutation({
+ *   variables: {
+ *      subjectId: // value for 'subjectId'
+ *      body: // value for 'body'
+ *   },
+ * });
+ */
+export function useAddPrCommentMutation(baseOptions?: Apollo.MutationHookOptions<AddPrCommentMutation, AddPrCommentMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddPrCommentMutation, AddPrCommentMutationVariables>(AddPrCommentDocument, options);
+      }
+export type AddPrCommentMutationHookResult = ReturnType<typeof useAddPrCommentMutation>;
+export type AddPrCommentMutationResult = Apollo.MutationResult<AddPrCommentMutation>;
+export type AddPrCommentMutationOptions = Apollo.BaseMutationOptions<AddPrCommentMutation, AddPrCommentMutationVariables>;
+export const MergePrDocument = gql`
+    mutation MergePR($pullRequestId: ID!, $mergeMethod: PullRequestMergeMethod!, $commitHeadline: String) {
+  mergePullRequest(
+    input: {pullRequestId: $pullRequestId, mergeMethod: $mergeMethod, commitHeadline: $commitHeadline}
+  ) {
+    pullRequest {
+      id
+      merged
+      mergedAt
+      state
+    }
+  }
+}
+    `;
+export type MergePrMutationFn = Apollo.MutationFunction<MergePrMutation, MergePrMutationVariables>;
+
+/**
+ * __useMergePrMutation__
+ *
+ * To run a mutation, you first call `useMergePrMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMergePrMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [mergePrMutation, { data, loading, error }] = useMergePrMutation({
+ *   variables: {
+ *      pullRequestId: // value for 'pullRequestId'
+ *      mergeMethod: // value for 'mergeMethod'
+ *      commitHeadline: // value for 'commitHeadline'
+ *   },
+ * });
+ */
+export function useMergePrMutation(baseOptions?: Apollo.MutationHookOptions<MergePrMutation, MergePrMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MergePrMutation, MergePrMutationVariables>(MergePrDocument, options);
+      }
+export type MergePrMutationHookResult = ReturnType<typeof useMergePrMutation>;
+export type MergePrMutationResult = Apollo.MutationResult<MergePrMutation>;
+export type MergePrMutationOptions = Apollo.BaseMutationOptions<MergePrMutation, MergePrMutationVariables>;
+export const ClosePrDocument = gql`
+    mutation ClosePR($pullRequestId: ID!) {
+  closePullRequest(input: {pullRequestId: $pullRequestId}) {
+    pullRequest {
+      id
+      closed
+      closedAt
+      state
+    }
+  }
+}
+    `;
+export type ClosePrMutationFn = Apollo.MutationFunction<ClosePrMutation, ClosePrMutationVariables>;
+
+/**
+ * __useClosePrMutation__
+ *
+ * To run a mutation, you first call `useClosePrMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useClosePrMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [closePrMutation, { data, loading, error }] = useClosePrMutation({
+ *   variables: {
+ *      pullRequestId: // value for 'pullRequestId'
+ *   },
+ * });
+ */
+export function useClosePrMutation(baseOptions?: Apollo.MutationHookOptions<ClosePrMutation, ClosePrMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ClosePrMutation, ClosePrMutationVariables>(ClosePrDocument, options);
+      }
+export type ClosePrMutationHookResult = ReturnType<typeof useClosePrMutation>;
+export type ClosePrMutationResult = Apollo.MutationResult<ClosePrMutation>;
+export type ClosePrMutationOptions = Apollo.BaseMutationOptions<ClosePrMutation, ClosePrMutationVariables>;
+export const ReopenPrDocument = gql`
+    mutation ReopenPR($pullRequestId: ID!) {
+  reopenPullRequest(input: {pullRequestId: $pullRequestId}) {
+    pullRequest {
+      id
+      closed
+      state
+    }
+  }
+}
+    `;
+export type ReopenPrMutationFn = Apollo.MutationFunction<ReopenPrMutation, ReopenPrMutationVariables>;
+
+/**
+ * __useReopenPrMutation__
+ *
+ * To run a mutation, you first call `useReopenPrMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useReopenPrMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [reopenPrMutation, { data, loading, error }] = useReopenPrMutation({
+ *   variables: {
+ *      pullRequestId: // value for 'pullRequestId'
+ *   },
+ * });
+ */
+export function useReopenPrMutation(baseOptions?: Apollo.MutationHookOptions<ReopenPrMutation, ReopenPrMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ReopenPrMutation, ReopenPrMutationVariables>(ReopenPrDocument, options);
+      }
+export type ReopenPrMutationHookResult = ReturnType<typeof useReopenPrMutation>;
+export type ReopenPrMutationResult = Apollo.MutationResult<ReopenPrMutation>;
+export type ReopenPrMutationOptions = Apollo.BaseMutationOptions<ReopenPrMutation, ReopenPrMutationVariables>;
+export const AddLabelsToPrDocument = gql`
+    mutation AddLabelsToPR($labelableId: ID!, $labelIds: [ID!]!) {
+  addLabelsToLabelable(input: {labelableId: $labelableId, labelIds: $labelIds}) {
+    labelable {
+      ... on PullRequest {
+        id
+        labels(first: 10) {
+          nodes {
+            id
+            name
+            color
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+export type AddLabelsToPrMutationFn = Apollo.MutationFunction<AddLabelsToPrMutation, AddLabelsToPrMutationVariables>;
+
+/**
+ * __useAddLabelsToPrMutation__
+ *
+ * To run a mutation, you first call `useAddLabelsToPrMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useAddLabelsToPrMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [addLabelsToPrMutation, { data, loading, error }] = useAddLabelsToPrMutation({
+ *   variables: {
+ *      labelableId: // value for 'labelableId'
+ *      labelIds: // value for 'labelIds'
+ *   },
+ * });
+ */
+export function useAddLabelsToPrMutation(baseOptions?: Apollo.MutationHookOptions<AddLabelsToPrMutation, AddLabelsToPrMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<AddLabelsToPrMutation, AddLabelsToPrMutationVariables>(AddLabelsToPrDocument, options);
+      }
+export type AddLabelsToPrMutationHookResult = ReturnType<typeof useAddLabelsToPrMutation>;
+export type AddLabelsToPrMutationResult = Apollo.MutationResult<AddLabelsToPrMutation>;
+export type AddLabelsToPrMutationOptions = Apollo.BaseMutationOptions<AddLabelsToPrMutation, AddLabelsToPrMutationVariables>;
+export const RemoveLabelsFromPrDocument = gql`
+    mutation RemoveLabelsFromPR($labelableId: ID!, $labelIds: [ID!]!) {
+  removeLabelsFromLabelable(
+    input: {labelableId: $labelableId, labelIds: $labelIds}
+  ) {
+    labelable {
+      ... on PullRequest {
+        id
+        labels(first: 10) {
+          nodes {
+            id
+            name
+            color
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+export type RemoveLabelsFromPrMutationFn = Apollo.MutationFunction<RemoveLabelsFromPrMutation, RemoveLabelsFromPrMutationVariables>;
+
+/**
+ * __useRemoveLabelsFromPrMutation__
+ *
+ * To run a mutation, you first call `useRemoveLabelsFromPrMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRemoveLabelsFromPrMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [removeLabelsFromPrMutation, { data, loading, error }] = useRemoveLabelsFromPrMutation({
+ *   variables: {
+ *      labelableId: // value for 'labelableId'
+ *      labelIds: // value for 'labelIds'
+ *   },
+ * });
+ */
+export function useRemoveLabelsFromPrMutation(baseOptions?: Apollo.MutationHookOptions<RemoveLabelsFromPrMutation, RemoveLabelsFromPrMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RemoveLabelsFromPrMutation, RemoveLabelsFromPrMutationVariables>(RemoveLabelsFromPrDocument, options);
+      }
+export type RemoveLabelsFromPrMutationHookResult = ReturnType<typeof useRemoveLabelsFromPrMutation>;
+export type RemoveLabelsFromPrMutationResult = Apollo.MutationResult<RemoveLabelsFromPrMutation>;
+export type RemoveLabelsFromPrMutationOptions = Apollo.BaseMutationOptions<RemoveLabelsFromPrMutation, RemoveLabelsFromPrMutationVariables>;
+export const RequestReviewersDocument = gql`
+    mutation RequestReviewers($pullRequestId: ID!, $userIds: [ID!]) {
+  requestReviews(input: {pullRequestId: $pullRequestId, userIds: $userIds}) {
+    pullRequest {
+      id
+      reviewRequests(first: 10) {
+        nodes {
+          requestedReviewer {
+            ... on User {
+              login
+              avatarUrl
+            }
+          }
+        }
+      }
+    }
+  }
+}
+    `;
+export type RequestReviewersMutationFn = Apollo.MutationFunction<RequestReviewersMutation, RequestReviewersMutationVariables>;
+
+/**
+ * __useRequestReviewersMutation__
+ *
+ * To run a mutation, you first call `useRequestReviewersMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useRequestReviewersMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [requestReviewersMutation, { data, loading, error }] = useRequestReviewersMutation({
+ *   variables: {
+ *      pullRequestId: // value for 'pullRequestId'
+ *      userIds: // value for 'userIds'
+ *   },
+ * });
+ */
+export function useRequestReviewersMutation(baseOptions?: Apollo.MutationHookOptions<RequestReviewersMutation, RequestReviewersMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<RequestReviewersMutation, RequestReviewersMutationVariables>(RequestReviewersDocument, options);
+      }
+export type RequestReviewersMutationHookResult = ReturnType<typeof useRequestReviewersMutation>;
+export type RequestReviewersMutationResult = Apollo.MutationResult<RequestReviewersMutation>;
+export type RequestReviewersMutationOptions = Apollo.BaseMutationOptions<RequestReviewersMutation, RequestReviewersMutationVariables>;
 export const GetViewerDocument = gql`
     query GetViewer {
   viewer {

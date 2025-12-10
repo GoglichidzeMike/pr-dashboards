@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ApolloProvider } from "@/components/providers/ApolloProvider";
 import { FilterProvider } from "@/contexts/FilterContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { Toaster } from "@/components/ui/sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -36,6 +37,7 @@ export default function RootLayout({
             <ApolloProvider>
               <FilterProvider>
                 {children}
+                <Toaster />
               </FilterProvider>
             </ApolloProvider>
           </AuthProvider>

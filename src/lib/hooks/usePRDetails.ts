@@ -162,6 +162,7 @@ interface UsePRDetailsResult {
   pr: PRDetails | null;
   loading: boolean;
   error: Error | null;
+  refetch: () => void;
 }
 
 /**
@@ -176,7 +177,7 @@ export const usePRDetails = (
   name: string | null,
   number: number | null
 ): UsePRDetailsResult => {
-  const { data, loading, error } = useQuery(GET_PR_DETAILS, {
+  const { data, loading, error, refetch } = useQuery(GET_PR_DETAILS, {
     variables: {
       owner: owner || '',
       name: name || '',
@@ -186,10 +187,17 @@ export const usePRDetails = (
     fetchPolicy: 'cache-and-network',
   });
 
+  const handleRefetch = async () => {
+    if (owner && name && number) {
+      await refetch();
+    }
+  };
+
   return {
     pr: data?.repository?.pullRequest || null,
     loading,
     error: error as Error | null,
+    refetch: handleRefetch,
   };
 };
 

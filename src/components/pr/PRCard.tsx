@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PullRequest } from '@/lib/hooks/usePRs';
+import { PRActions } from './PRActions';
 import { cn } from '@/lib/utils';
 
 interface PRCardProps {
@@ -57,8 +58,8 @@ export const PRCard: React.FC<PRCardProps> = memo(({ pr, onClick }) => {
   };
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Don't open modal if clicking on a link or button
-    if ((e.target as HTMLElement).closest('a, button')) {
+    // Don't open modal if clicking on a link, button, dropdown menu, or dialog
+    if ((e.target as HTMLElement).closest('a, button, [role="menu"], [role="dialog"], [role="alertdialog"]')) {
       return;
     }
     onClick?.();
@@ -160,10 +161,13 @@ export const PRCard: React.FC<PRCardProps> = memo(({ pr, onClick }) => {
               </div>
             </div>
           </div>
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage src={pr.author.avatarUrl} alt={pr.author.login} />
-            <AvatarFallback className="text-xs">{pr.author.login[0].toUpperCase()}</AvatarFallback>
-          </Avatar>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <PRActions pr={pr} />
+            <Avatar className="h-8 w-8">
+              <AvatarImage src={pr.author.avatarUrl} alt={pr.author.login} />
+              <AvatarFallback className="text-xs">{pr.author.login[0].toUpperCase()}</AvatarFallback>
+            </Avatar>
+          </div>
         </div>
       </CardContent>
     </Card>
