@@ -1,6 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# GitHub PR Dashboard
+
+A Next.js application for managing GitHub pull requests with real-time updates, advanced filtering, and comprehensive PR information display.
 
 ## Getting Started
+
+### Prerequisites
+
+- Node.js 18.12 or higher
+- pnpm (or npm/yarn)
+- GitHub OAuth App credentials
+
+### Environment Variables
+
+Create a `.env.local` file in the root directory with the following variables:
+
+```bash
+# GitHub OAuth Configuration
+GITHUB_CLIENT_ID=your_github_client_id_here
+GITHUB_CLIENT_SECRET=your_github_client_secret_here
+
+# Application URL (used for OAuth redirects)
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+# Optional: GitHub Token for development/testing (for GraphQL codegen)
+GITHUB_TOKEN=your_github_token_here
+```
+
+### Setting up GitHub OAuth App
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Fill in the application details:
+   - **Application name**: GitHub PR Dashboard (or your preferred name)
+   - **Homepage URL**: `http://localhost:3000` (for development)
+   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback`
+4. Click "Register application"
+5. Copy the **Client ID** and generate a **Client Secret**
+6. Add these to your `.env.local` file
+
+### Installation
+
+Install dependencies:
+
+```bash
+pnpm install
+```
+
+### Running the Development Server
 
 First, run the development server:
 

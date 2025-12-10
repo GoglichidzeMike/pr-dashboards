@@ -1,0 +1,27 @@
+schema:
+  - 'https://api.github.com/graphql':
+      headers:
+        Authorization: Bearer ${GITHUB_TOKEN}
+        User-Agent: GitHub-PR-Dashboard
+documents: './src/lib/github/**/*.{ts,tsx}'
+ignoreNoDocuments: true
+# Note: GITHUB_TOKEN is required for codegen. 
+# You can skip codegen for now and run it after authentication is set up.
+generates:
+  src/lib/github/types.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      withHooks: true
+      withHOC: false
+      withComponent: false
+      skipTypename: false
+      enumsAsTypes: true
+      scalars:
+        DateTime: string
+        URI: string
+        HTML: string
+        X509Certificate: string
+
