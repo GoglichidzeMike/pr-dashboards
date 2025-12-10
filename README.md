@@ -90,33 +90,41 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
    - Select "Deploy from GitHub repo"
    - Choose your repository
 
-2. **Set Environment Variables:**
+2. **Generate Public Domain (Get Your URL):**
+   - In Railway, go to your service's **Settings** tab
+   - Scroll down to the **Networking** section
+   - Click **"Generate Domain"** or **"+ Public Domain"**
+   - Railway will create a URL like `https://pr-dashboards-production-xxxx.up.railway.app`
+   - **Copy this URL** - you'll need it for the next steps
+
+3. **Set Environment Variables:**
    Railway will automatically detect Next.js, but you need to set these environment variables in Railway's dashboard:
    
    ```
    GITHUB_CLIENT_ID=your_github_client_id_here
    GITHUB_CLIENT_SECRET=your_github_client_secret_here
    NEXT_PUBLIC_GITHUB_CLIENT_ID=your_github_client_id_here
-   NEXT_PUBLIC_APP_URL=https://your-app-name.up.railway.app
+   NEXT_PUBLIC_APP_URL=https://your-actual-railway-url.up.railway.app
    ```
    
-   **Important:** After Railway generates your app URL, update `NEXT_PUBLIC_APP_URL` with the actual Railway URL.
+   **Important:** Replace `https://your-actual-railway-url.up.railway.app` with the actual URL you generated in step 2.
 
-3. **Update GitHub OAuth App:**
+4. **Update GitHub OAuth App:**
    - Go to your GitHub OAuth App settings
-   - Update the **Authorization callback URL** to: `https://your-app-name.up.railway.app/api/auth/callback`
+   - Update the **Homepage URL** to: `https://your-actual-railway-url.up.railway.app`
+   - Update the **Authorization callback URL** to: `https://your-actual-railway-url.up.railway.app/api/auth/callback`
    - Save the changes
 
-4. **Deploy:**
+5. **Deploy:**
    - Railway will automatically build and deploy your app
    - The build process will run `pnpm install` and `pnpm build`
    - Once deployed, your app will be available at the Railway-provided URL
+   - If you see "Unexposed service", make sure you've generated a public domain in step 2
 
 ### Railway Configuration
 
 The project includes:
-- `railway.json` - Railway deployment configuration
-- `nixpacks.toml` - Build configuration for Railway's Nixpacks builder
+- `railway.json` - Railway deployment configuration (uses Railpack builder)
 
 ### Environment Variables Reference
 
