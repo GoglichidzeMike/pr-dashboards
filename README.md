@@ -75,6 +75,59 @@ To learn more about Next.js, take a look at the following resources:
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
+## Deploy on Railway
+
+### Prerequisites
+
+1. A [Railway](https://railway.app) account
+2. Your GitHub repository pushed to GitHub
+
+### Deployment Steps
+
+1. **Connect your repository to Railway:**
+   - Go to [Railway Dashboard](https://railway.app/dashboard)
+   - Click "New Project"
+   - Select "Deploy from GitHub repo"
+   - Choose your repository
+
+2. **Set Environment Variables:**
+   Railway will automatically detect Next.js, but you need to set these environment variables in Railway's dashboard:
+   
+   ```
+   GITHUB_CLIENT_ID=your_github_client_id_here
+   GITHUB_CLIENT_SECRET=your_github_client_secret_here
+   NEXT_PUBLIC_GITHUB_CLIENT_ID=your_github_client_id_here
+   NEXT_PUBLIC_APP_URL=https://your-app-name.up.railway.app
+   ```
+   
+   **Important:** After Railway generates your app URL, update `NEXT_PUBLIC_APP_URL` with the actual Railway URL.
+
+3. **Update GitHub OAuth App:**
+   - Go to your GitHub OAuth App settings
+   - Update the **Authorization callback URL** to: `https://your-app-name.up.railway.app/api/auth/callback`
+   - Save the changes
+
+4. **Deploy:**
+   - Railway will automatically build and deploy your app
+   - The build process will run `pnpm install` and `pnpm build`
+   - Once deployed, your app will be available at the Railway-provided URL
+
+### Railway Configuration
+
+The project includes:
+- `railway.json` - Railway deployment configuration
+- `nixpacks.toml` - Build configuration for Railway's Nixpacks builder
+
+### Environment Variables Reference
+
+| Variable | Description | Required |
+|----------|-------------|----------|
+| `GITHUB_CLIENT_ID` | GitHub OAuth App Client ID | Yes |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth App Client Secret | Yes |
+| `NEXT_PUBLIC_GITHUB_CLIENT_ID` | Same as GITHUB_CLIENT_ID (for client-side) | Yes |
+| `NEXT_PUBLIC_APP_URL` | Your Railway app URL (e.g., `https://your-app.up.railway.app`) | Yes |
+| `GITHUB_TOKEN` | Optional: For GraphQL codegen (not needed in production) | No |
+
 ## Deploy on Vercel
 
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
