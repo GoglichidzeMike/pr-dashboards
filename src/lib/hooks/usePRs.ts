@@ -143,8 +143,7 @@ export function usePRs(repos: string[], pollInterval: number = 60000) {
     pollInterval: sortedRepos.length > 0 ? pollInterval : 0,
     notifyOnNetworkStatusChange: true,
     errorPolicy: 'all',
-    fetchPolicy: 'cache-and-network',
-    nextFetchPolicy: 'network-only', // Always fetch fresh data on subsequent calls
+    fetchPolicy: 'network-only', // Use network-only to avoid cache conflicts with dynamic aliased queries
   });
 
   // Transform data to extract PRs from aliased results

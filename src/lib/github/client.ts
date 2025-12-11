@@ -83,15 +83,8 @@ export const apolloClient = new ApolloClient({
   link: from([errorLink, retryLink, authLink, httpLink]),
   cache: new InMemoryCache({
     typePolicies: {
-      Query: {
-        fields: {
-          repository: {
-            merge(existing, incoming) {
-              return incoming;
-            },
-          },
-        },
-      },
+      // Removed repository merge policy to prevent cache conflicts with aliased queries
+      // Using network-only fetch policy in usePRs ensures fresh data
       PullRequest: {
         keyFields: ['id'],
       },
