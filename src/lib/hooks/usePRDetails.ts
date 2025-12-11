@@ -2,6 +2,7 @@
 
 import { useQuery } from '@apollo/client/react';
 import { GET_PR_DETAILS } from '@/lib/github/queries';
+import { GetPrDetailsQuery } from '@/lib/github/types';
 
 export interface PRDetailsComment {
   id: string;
@@ -93,8 +94,8 @@ export interface PRDetails {
   mergeable: string;
   merged: boolean;
   closed: boolean;
-  mergedAt?: string;
-  closedAt?: string;
+  mergedAt?: string | null;
+  closedAt?: string | null;
   headRefName: string;
   baseRefName: string;
   author: {
@@ -177,7 +178,7 @@ export const usePRDetails = (
   name: string | null,
   number: number | null
 ): UsePRDetailsResult => {
-  const { data, loading, error, refetch } = useQuery(GET_PR_DETAILS, {
+  const { data, loading, error, refetch } = useQuery<GetPrDetailsQuery>(GET_PR_DETAILS, {
     variables: {
       owner: owner || '',
       name: name || '',
@@ -194,7 +195,7 @@ export const usePRDetails = (
   };
 
   return {
-    pr: data?.repository?.pullRequest || null,
+    pr: (data?.repository?.pullRequest as PRDetails | null | undefined) || null,
     loading,
     error: error as Error | null,
     refetch: handleRefetch,
