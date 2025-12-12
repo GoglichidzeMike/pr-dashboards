@@ -89,38 +89,7 @@ export const apolloClient = new ApolloClient({
         keyFields: ['id'],
       },
       Repository: {
-        // Use a function to handle cases where nameWithOwner might not exist
-        keyFields: (object, { readField }) => {
-          // Try nameWithOwner first
-          const nameWithOwner = readField('nameWithOwner', object);
-          if (nameWithOwner) {
-            return `nameWithOwner:${nameWithOwner}`;
-          }
-          
-          // Try id
-          const id = readField('id', object);
-          if (id) {
-            return `id:${id}`;
-          }
-          
-          // Fallback: construct from owner and name
-          const owner = readField('owner', object);
-          let ownerLogin: string | null = null;
-          if (owner && typeof owner === 'object' && !Array.isArray(owner) && 'login' in owner) {
-            const login = readField('login', owner as any);
-            if (typeof login === 'string') {
-              ownerLogin = login;
-            }
-          }
-          const name = readField('name', object);
-          
-          if (ownerLogin && name) {
-            return `nameWithOwner:${ownerLogin}/${name}`;
-          }
-          
-          // Last resort
-          return `Repository:${id || name || 'unknown'}`;
-        },
+        keyFields: false,
       },
       User: {
         keyFields: ['login'],
