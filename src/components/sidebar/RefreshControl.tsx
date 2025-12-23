@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { savePreferences, getPreferences } from '@/lib/storage/preferences';
 
 const POLL_INTERVALS = [
@@ -19,7 +19,7 @@ interface RefreshControlProps {
   onIntervalChange?: (interval: number) => void;
 }
 
-export const RefreshControl: React.FC<RefreshControlProps> = ({ onRefresh, onIntervalChange }) => {
+export const RefreshControl: React.FC<RefreshControlProps> = ({ onRefresh, onIntervalChange, loading }) => {
   const [interval, setInterval] = useState(() => {
     const prefs = getPreferences();
     return prefs.pollingInterval || 60000;
@@ -54,7 +54,7 @@ export const RefreshControl: React.FC<RefreshControlProps> = ({ onRefresh, onInt
           title="Refresh now"
           className="h-9 w-9"
         >
-          <RefreshCw className="h-4 w-4" />
+          {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
         </Button>
       )}
     </div>

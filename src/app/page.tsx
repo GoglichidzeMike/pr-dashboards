@@ -17,7 +17,7 @@ export default function Home() {
   const { selectedRepos } = useFilter();
   const preferences = getPreferences();
   const pollInterval = preferences.pollingInterval || 60000;
-  const { refetch } = usePRs(selectedRepos, pollInterval);
+  const { refetch, loading } = usePRs(selectedRepos, pollInterval);
 
   return (
     <ProtectedRoute>
@@ -27,7 +27,7 @@ export default function Home() {
           <div className="sticky top-0 z-10 flex items-center justify-between border-b bg-background px-6 py-4">
             <h1 className="text-2xl font-bold">GitHub PR Dashboard</h1>
             <div className="flex items-center gap-2">
-              <RefreshControl onRefresh={() => refetch()} />
+              <RefreshControl onRefresh={() => refetch()} loading={loading} />
               <ThemeToggle />
               <Button variant="outline" size="default" onClick={logout} className='cursor-pointer'>
                 <LogOut className="mr-2 h-4 w-4" />
