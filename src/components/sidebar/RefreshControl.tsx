@@ -17,6 +17,7 @@ const POLL_INTERVALS = [
 interface RefreshControlProps {
   onRefresh?: () => void;
   onIntervalChange?: (interval: number) => void;
+  loading?: boolean;
 }
 
 export const RefreshControl: React.FC<RefreshControlProps> = ({ onRefresh, onIntervalChange, loading }) => {
