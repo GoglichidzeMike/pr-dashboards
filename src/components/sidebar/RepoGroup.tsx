@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef, useEffect } from 'react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Repository } from '@/lib/hooks/useRepos';
 
@@ -17,30 +16,21 @@ export const RepoGroup: React.FC<RepoGroupProps> = ({
   onToggleRepo,
   onToggleOrg,
 }) => {
-  const checkboxRef = useRef<HTMLButtonElement>(null);
   const groupRepoNames = group.repos.map((repo) => repo.nameWithOwner);
   const selectedInGroup = groupRepoNames.filter((name) => selectedRepos.includes(name));
   const allSelected = selectedInGroup.length === groupRepoNames.length && groupRepoNames.length > 0;
   const someSelected = selectedInGroup.length > 0 && selectedInGroup.length < groupRepoNames.length;
 
-  useEffect(() => {
-    if (checkboxRef.current) {
-      checkboxRef.current.indeterminate = someSelected;
-    }
-  }, [someSelected]);
-
   const handleOrgToggle = () => {
     onToggleOrg(groupRepoNames);
   };
 
+  const checkedState: boolean | 'indeterminate' = someSelected ? 'indeterminate' : allSelected;
+
   return (
     <div className="space-y-1">
       <div className="flex items-center space-x-2 px-2 py-1.5">
-        <Checkbox
-          ref={checkboxRef}
-          checked={allSelected}
-          onCheckedChange={handleOrgToggle}
-        />
+        <Checkbox checked={checkedState} onCheckedChange={handleOrgToggle} />
         <div
           className="flex-1 cursor-pointer text-xs font-semibold text-muted-foreground uppercase tracking-wider"
           onClick={handleOrgToggle}
@@ -67,9 +57,7 @@ export const RepoGroup: React.FC<RepoGroupProps> = ({
             >
               <div className="flex items-center gap-2">
                 <span className="truncate">{repo.nameWithOwner}</span>
-                {repo.isPrivate && (
-                  <span className="text-xs text-muted-foreground">🔒</span>
-                )}
+                {repo.isPrivate && <span className="text-xs text-muted-foreground">🔒</span>}
               </div>
             </label>
           </div>
@@ -78,4 +66,3 @@ export const RepoGroup: React.FC<RepoGroupProps> = ({
     </div>
   );
 };
-
