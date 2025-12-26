@@ -3,7 +3,9 @@ schema:
       headers:
         Authorization: Bearer ${GITHUB_TOKEN}
         User-Agent: GitHub-PR-Dashboard
-documents: './src/lib/github/**/*.{ts,tsx}'
+documents:
+  - './src/lib/github/**/*.{ts,tsx}'
+  - './src/server/github/**/*.ts'
 ignoreNoDocuments: true
 # Note: GITHUB_TOKEN is required for codegen. 
 # You can skip codegen for now and run it after authentication is set up.

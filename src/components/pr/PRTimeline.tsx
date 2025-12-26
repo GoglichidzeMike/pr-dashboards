@@ -133,7 +133,7 @@ export const PRTimeline: React.FC<PRTimelineProps> = ({ timelineItems }) => {
             <div className="flex-shrink-0 mt-1">
               {author ? (
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={author.avatarUrl} alt={author.login || 'Unknown'} />
+                  <AvatarImage src={author.avatarUrl || undefined} alt={author.login || 'Unknown'} />
                   <AvatarFallback className="text-xs">
                     {(author.login || '?')[0].toUpperCase()}
                   </AvatarFallback>

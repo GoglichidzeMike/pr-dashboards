@@ -37,7 +37,7 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ preferences: updatedUser.preferences });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Invalid preferences', details: error.errors }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid preferences', details: error.issues }, { status: 400 });
     }
     console.error('Error updating preferences:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

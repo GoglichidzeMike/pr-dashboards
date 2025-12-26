@@ -34,7 +34,7 @@ export const AccountSection: React.FC = () => {
       <CardContent className="space-y-4">
         <div className="flex items-center gap-4">
           <Avatar className="h-16 w-16">
-            <AvatarImage src={user?.avatarUrl} alt={user?.githubLogin} />
+            <AvatarImage src={user?.avatarUrl || undefined} alt={user?.githubLogin} />
             <AvatarFallback>{user?.githubLogin?.[0]?.toUpperCase()}</AvatarFallback>
           </Avatar>
           <div>

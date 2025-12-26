@@ -1,5 +1,12 @@
 import { gql } from '@apollo/client';
 import { createServerGitHubClient } from './client';
+import type {
+  AddPullRequestReviewPayload,
+  AddCommentPayload,
+  MergePullRequestPayload,
+  ClosePullRequestPayload,
+  ReopenPullRequestPayload,
+} from '@/lib/github/types';
 
 const APPROVE_PR_MUTATION = gql`
   mutation ApprovePR($pullRequestId: ID!, $body: String) {
@@ -82,34 +89,34 @@ const REOPEN_PR_MUTATION = gql`
 export async function approvePR(token: string, pullRequestId: string, body?: string) {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.mutate({
+  const { data } = await client.mutate<{ addPullRequestReview: AddPullRequestReviewPayload }>({
     mutation: APPROVE_PR_MUTATION,
     variables: { pullRequestId, body },
   });
 
-  return data.addPullRequestReview.pullRequestReview;
+  return data!.addPullRequestReview.pullRequestReview!;
 }
 
 export async function requestChanges(token: string, pullRequestId: string, body: string) {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.mutate({
+  const { data } = await client.mutate<{ addPullRequestReview: AddPullRequestReviewPayload }>({
     mutation: REQUEST_CHANGES_MUTATION,
     variables: { pullRequestId, body },
   });
 
-  return data.addPullRequestReview.pullRequestReview;
+  return data!.addPullRequestReview.pullRequestReview!;
 }
 
 export async function addPRComment(token: string, pullRequestId: string, body: string) {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.mutate({
+  const { data } = await client.mutate<{ addComment: AddCommentPayload }>({
     mutation: ADD_COMMENT_MUTATION,
     variables: { subjectId: pullRequestId, body },
   });
 
-  return data.addComment.commentEdge.node;
+  return data!.addComment!.commentEdge!.node!;
 }
 
 export async function mergePR(
@@ -121,33 +128,33 @@ export async function mergePR(
 ) {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.mutate({
+  const { data } = await client.mutate<{ mergePullRequest: MergePullRequestPayload }>({
     mutation: MERGE_PR_MUTATION,
     variables: { pullRequestId, commitHeadline, commitBody, mergeMethod },
   });
 
-  return data.mergePullRequest.pullRequest;
+  return data!.mergePullRequest.pullRequest!;
 }
 
 export async function closePR(token: string, pullRequestId: string) {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.mutate({
+  const { data } = await client.mutate<{ closePullRequest: ClosePullRequestPayload }>({
     mutation: CLOSE_PR_MUTATION,
     variables: { pullRequestId },
   });
 
-  return data.closePullRequest.pullRequest;
+  return data!.closePullRequest.pullRequest!;
 }
 
 export async function reopenPR(token: string, pullRequestId: string) {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.mutate({
+  const { data } = await client.mutate<{ reopenPullRequest: ReopenPullRequestPayload }>({
     mutation: REOPEN_PR_MUTATION,
     variables: { pullRequestId },
   });
 
-  return data.reopenPullRequest.pullRequest;
+  return data!.reopenPullRequest.pullRequest!;
 }
 

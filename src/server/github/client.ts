@@ -1,8 +1,8 @@
-import { ApolloClient, InMemoryCache, createHttpLink, from, NormalizedCacheObject } from '@apollo/client';
+import { ApolloClient, InMemoryCache, createHttpLink, from } from '@apollo/client';
 import { setContext } from '@apollo/client/link/context';
 import { onError } from '@apollo/client/link/error';
 
-export function createServerGitHubClient(token: string): ApolloClient<NormalizedCacheObject> {
+export function createServerGitHubClient(token: string) {
   const httpLink = createHttpLink({
     uri: 'https://api.github.com/graphql',
     fetch,
@@ -18,17 +18,17 @@ export function createServerGitHubClient(token: string): ApolloClient<Normalized
     };
   });
 
-  const errorLink = onError(({ graphQLErrors, networkError }) => {
-    if (graphQLErrors) {
-      graphQLErrors.forEach(({ message, locations, path }) => {
+  const errorLink = onError((error: any) => {
+    if (error.graphQLErrors) {
+      error.graphQLErrors.forEach((err: any) => {
         console.error(
-          `[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`
+          `[GraphQL error]: Message: ${err.message}, Location: ${err.locations}, Path: ${err.path}`
         );
       });
     }
 
-    if (networkError) {
-      console.error(`[Network error]: ${networkError}`);
+    if (error.networkError) {
+      console.error(`[Network error]: ${error.networkError}`);
     }
   });
 

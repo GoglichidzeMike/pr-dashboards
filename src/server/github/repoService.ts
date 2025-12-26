@@ -1,11 +1,16 @@
 import { gql } from '@apollo/client';
 import { createServerGitHubClient } from './client';
+import type { GetRepositoriesQuery } from '@/lib/github/types';
 
 const GET_REPOSITORIES = gql`
   query GetRepositories {
     viewer {
       login
-      repositories(first: 100, orderBy: { field: UPDATED_AT, direction: DESC }, affiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]) {
+      repositories(
+        first: 100
+        orderBy: { field: UPDATED_AT, direction: DESC }
+        affiliations: [OWNER, COLLABORATOR, ORGANIZATION_MEMBER]
+      ) {
         nodes {
           id
           name
@@ -69,9 +74,13 @@ export interface ReposResponse {
 export async function fetchRepositories(token: string): Promise<ReposResponse> {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.query({
+  const { data } = await client.query<GetRepositoriesQuery>({
     query: GET_REPOSITORIES,
   });
+
+  if (!data?.viewer) {
+    throw new Error('Failed to fetch repositories');
+  }
 
   const personalRepos: Repository[] =
     data.viewer.repositories?.nodes
@@ -110,10 +119,7 @@ export async function fetchRepositories(token: string): Promise<ReposResponse> {
             })) || [],
       })) || [];
 
-  const allReposArray = [
-    ...personalRepos,
-    ...organizations.flatMap((org) => org.repositories),
-  ];
+  const allReposArray = [...personalRepos, ...organizations.flatMap((org) => org.repositories)];
 
   const allRepos: Repository[] = Array.from(
     new Map(allReposArray.map((repo) => [repo.nameWithOwner, repo])).values()
@@ -126,4 +132,3 @@ export async function fetchRepositories(token: string): Promise<ReposResponse> {
     viewerLogin: data.viewer.login,
   };
 }
-

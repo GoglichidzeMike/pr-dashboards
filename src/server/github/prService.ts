@@ -458,10 +458,14 @@ const GET_PR_DETAILS = gql`
 export async function fetchPRDetails(token: string, owner: string, repo: string, number: number) {
   const client = createServerGitHubClient(token);
 
-  const { data } = await client.query({
+  const { data } = await client.query<import('@/lib/github/types').GetPrDetailsQuery>({
     query: GET_PR_DETAILS,
     variables: { owner, name: repo, number },
   });
+
+  if (!data?.repository?.pullRequest) {
+    throw new Error('Pull request not found');
+  }
 
   return data.repository.pullRequest;
 }
