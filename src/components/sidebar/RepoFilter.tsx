@@ -1,33 +1,40 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useFilter } from '@/contexts/FilterContext';
 import { useRepos } from '@/lib/hooks/useRepos';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, CheckSquare, Square } from 'lucide-react';
 import { RepoGroupSkeleton } from './RepoGroupSkeleton';
+import { RepoGroup } from './RepoGroup';
+import { Repository } from '@/lib/hooks/useRepos';
+
+interface RepoGroup {
+  name: string;
+  repos: Repository[];
+  isPersonal: boolean;
+}
 
 export const RepoFilter: React.FC = () => {
   const { filterType, selectedRepos, toggleRepo, deselectAllRepos } = useFilter();
   const { personalRepos, organizations, allRepos, viewerLogin, loading } = useRepos();
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Filter and group repos based on selected organization filter
-  const groupedRepos = useMemo(() => {
+  /**
+   * Filter and group repos based on selected organization filter and search query
+   */
+  const groupedRepos = useMemo((): RepoGroup[] => {
     let repos = allRepos;
 
     if (filterType === 'personal') {
       repos = personalRepos;
     } else if (filterType === 'organizations') {
-      // Show all organization repos (exclude personal)
       repos = allRepos.filter((repo) => repo.owner.login !== viewerLogin);
     }
 
-    // Apply search filter
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       repos = repos.filter(
@@ -37,19 +44,13 @@ export const RepoFilter: React.FC = () => {
       );
     }
 
-    // Group repos by organization
-    const groups: Array<{ name: string; repos: typeof repos; isPersonal: boolean }> = [];
-    
-    // Get all org logins for filtering
+    const groups: RepoGroup[] = [];
     const orgLogins = new Set(organizations.map((org) => org.login));
-    
-    // Organization repos (sorted alphabetically)
     const sortedOrgs = [...organizations].sort((a, b) => a.login.localeCompare(b.login));
-    const reposInOrgs = new Set<string>(); // Track repos that belong to orgs
-    
+    const reposInOrgs = new Set<string>();
+
     sortedOrgs.forEach((org) => {
       const orgRepos = repos.filter((repo) => {
-        // Repo belongs to this org if owner matches org login
         const belongsToOrg = repo.owner.login === org.login;
         if (belongsToOrg) {
           reposInOrgs.add(repo.nameWithOwner);
@@ -61,12 +62,7 @@ export const RepoFilter: React.FC = () => {
       }
     });
 
-    // Personal repos (at the bottom) - exclude repos that are already in org groups
     const personal = repos.filter((repo) => {
-      // Repo is personal if:
-      // 1. Owner matches viewer login
-      // 2. Owner is NOT an organization
-      // 3. Not already placed in an org group
       return (
         repo.owner.login === viewerLogin &&
         !orgLogins.has(repo.owner.login) &&
@@ -78,34 +74,61 @@ export const RepoFilter: React.FC = () => {
     }
 
     return groups;
-  }, [filterType, personalRepos, organizations, allRepos, searchQuery]);
+  }, [allRepos, personalRepos, organizations, filterType, viewerLogin, searchQuery]);
 
-  // Flatten grouped repos for select all logic
-  const allFilteredRepos = useMemo(() => {
-    return groupedRepos.flatMap((group) => group.repos);
-  }, [groupedRepos]);
+  const allFilteredRepos = useMemo(
+    () => groupedRepos.flatMap((group) => group.repos),
+    [groupedRepos]
+  );
 
-  // Check if all filtered repos are selected
-  const allSelected = allFilteredRepos.length > 0 && allFilteredRepos.every((repo) => selectedRepos.includes(repo.nameWithOwner));
-  const someSelected = allFilteredRepos.some((repo) => selectedRepos.includes(repo.nameWithOwner));
+  const allSelected = useMemo(
+    () =>
+      allFilteredRepos.length > 0 &&
+      allFilteredRepos.every((repo) => selectedRepos.includes(repo.nameWithOwner)),
+    [allFilteredRepos, selectedRepos]
+  );
 
-  const handleSelectAll = () => {
+  /**
+   * Toggle selection for all repos in a specific organization/group
+   */
+  const handleToggleOrg = useCallback(
+    (repoNames: string[]) => {
+      const selectedInGroup = repoNames.filter((name) => selectedRepos.includes(name));
+      const allInGroupSelected = selectedInGroup.length === repoNames.length;
+
+      repoNames.forEach((repoName) => {
+        if (allInGroupSelected) {
+          if (selectedRepos.includes(repoName)) {
+            toggleRepo(repoName);
+          }
+        } else {
+          if (!selectedRepos.includes(repoName)) {
+            toggleRepo(repoName);
+          }
+        }
+      });
+    },
+    [selectedRepos, toggleRepo]
+  );
+
+  /**
+   * Toggle selection for all filtered repos
+   */
+  const handleSelectAll = useCallback(() => {
     if (allSelected) {
-      // Deselect all filtered repos
       allFilteredRepos.forEach((repo) => {
         if (selectedRepos.includes(repo.nameWithOwner)) {
           toggleRepo(repo.nameWithOwner);
         }
       });
     } else {
-      // Select all filtered repos
       allFilteredRepos.forEach((repo) => {
         if (!selectedRepos.includes(repo.nameWithOwner)) {
           toggleRepo(repo.nameWithOwner);
         }
       });
     }
-  };
+  }, [allSelected, allFilteredRepos, selectedRepos, toggleRepo]);
 
   return (
     <div className="space-y-2">
@@ -119,11 +142,7 @@ export const RepoFilter: React.FC = () => {
             className="h-7 px-2"
             title={allSelected ? 'Deselect all' : 'Select all'}
           >
-            {allSelected ? (
-              <CheckSquare className="h-4 w-4" />
-            ) : (
-              <Square className="h-4 w-4" />
-            )}
+            {allSelected ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
           </Button>
           {selectedRepos.length > 0 && (
             <Button
@@ -146,7 +165,7 @@ export const RepoFilter: React.FC = () => {
           className="pl-8"
         />
       </div>
-      <ScrollArea className="h-[300px] rounded-md border">
+      <ScrollArea className="h-[500px] rounded-md border">
         <div className="space-y-1 p-2">
           {loading ? (
             <>
@@ -160,38 +179,13 @@ export const RepoFilter: React.FC = () => {
             </div>
           ) : (
             groupedRepos.map((group) => (
-              <div key={group.name} className="space-y-1">
-                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  {group.name}
-                </div>
-                {group.repos.map((repo) => {
-                  const isSelected = selectedRepos.includes(repo.nameWithOwner);
-                  const uniqueKey = repo.nameWithOwner; // Use nameWithOwner as unique key
-                  return (
-                    <div
-                      key={uniqueKey}
-                      className="flex items-center space-x-2 rounded-md p-2 hover:bg-accent ml-2"
-                    >
-                      <Checkbox
-                        id={uniqueKey}
-                        checked={isSelected}
-                        onCheckedChange={() => toggleRepo(repo.nameWithOwner)}
-                      />
-                      <label
-                        htmlFor={uniqueKey}
-                        className="flex-1 cursor-pointer text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="truncate">{repo.nameWithOwner}</span>
-                          {repo.isPrivate && (
-                            <span className="text-xs text-muted-foreground">🔒</span>
-                          )}
-                        </div>
-                      </label>
-                    </div>
-                  );
-                })}
-              </div>
+              <RepoGroup
+                key={group.name}
+                group={group}
+                selectedRepos={selectedRepos}
+                onToggleRepo={toggleRepo}
+                onToggleOrg={handleToggleOrg}
+              />
             ))
           )}
         </div>
@@ -204,4 +198,3 @@ export const RepoFilter: React.FC = () => {
     </div>
   );
 };
-

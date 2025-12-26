@@ -26,12 +26,12 @@ export const PRDetailsModal: React.FC<PRDetailsModalProps> = ({ pr, open, onOpen
     ? [pr.repository.owner.login, pr.repository.name, pr.number]
     : [null, null, null];
 
-    const { pr: prDetails, loading, error, refetch } = usePRDetails(
-      owner || '', 
-      name || '', 
-      number || 0,
-      !!(owner && name && number)
-    );
+  const {
+    pr: prDetails,
+    loading,
+    error,
+    refetch,
+  } = usePRDetails(owner || '', name || '', number || 0, !!(owner && name && number));
 
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
@@ -49,7 +49,7 @@ export const PRDetailsModal: React.FC<PRDetailsModalProps> = ({ pr, open, onOpen
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl! max-h-[90vh] w-full h-[50vh] overflow-hidden flex flex-col transition-all duration-300 ease-in-out">
+      <DialogContent className="max-w-5xl! max-h-[80vh] w-full h-full overflow-hidden flex flex-col transition-all duration-300 ease-in-out">
         <DialogHeader className="shrink-0">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
@@ -129,7 +129,7 @@ export const PRDetailsModal: React.FC<PRDetailsModalProps> = ({ pr, open, onOpen
                   <PRDescription pr={prDetails} />
                 </TabsContent>
                 <TabsContent value="comments" className="mt-0">
-                <PRComments
+                  <PRComments
                     comments={prDetails.comments.nodes}
                     pullRequestId={prDetails.id}
                     owner={owner || ''}
@@ -152,8 +152,6 @@ export const PRDetailsModal: React.FC<PRDetailsModalProps> = ({ pr, open, onOpen
     </Dialog>
   );
 };
-
-
 
 // https://github.com/airaia-skrib/frontend/pull/395/changes#diff-71b152e9c1b3bf6f6849cf0309c24593347163666a373475019b65cd11a30088
 // https://github.com/airaia-skrib/frontend/pull/395/changes#diff-c3JjL3V0aWxzL2ZkeFBhcnNlci5qcw

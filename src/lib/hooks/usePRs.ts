@@ -70,7 +70,7 @@ export interface PullRequest {
 }
 
 export function usePRs(repos: string[], pollInterval: number = 60000) {
-  const { data, isLoading, error, refetch } = useQuery({
+  const { data, isLoading, isFetching, error, refetch } = useQuery({
     queryKey: ['prs', repos.sort()],
     queryFn: () => api.prs.list(repos),
     enabled: repos.length > 0,
@@ -79,9 +79,8 @@ export function usePRs(repos: string[], pollInterval: number = 60000) {
 
   return {
     pullRequests: data?.pullRequests || [],
-    loading: isLoading,
+    loading: isLoading || isFetching,
     error,
     refetch,
   };
 }
-
