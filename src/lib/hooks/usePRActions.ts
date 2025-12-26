@@ -1,21 +1,7 @@
-'use client';
-
-import { useMutation } from '@apollo/client/react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api/client';
 import { useCallback } from 'react';
-import {
-  SUBMIT_PR_REVIEW,
-  ADD_PR_COMMENT,
-  MERGE_PR,
-  CLOSE_PR,
-  REOPEN_PR,
-  ADD_LABELS_TO_PR,
-  REMOVE_LABELS_FROM_PR,
-  REQUEST_REVIEWERS,
-} from '@/lib/github/mutations';
-import { GET_PR_DETAILS } from '@/lib/github/queries';
-import { PR_DETAILS_FRAGMENT } from '@/lib/github/fragments';
 
-export type PullRequestReviewEvent = 'APPROVE' | 'REQUEST_CHANGES' | 'COMMENT';
 export type PullRequestMergeMethod = 'MERGE' | 'SQUASH' | 'REBASE';
 
 interface UsePRActionsOptions {
@@ -27,246 +13,182 @@ interface UsePRActionsOptions {
   onError?: (error: Error) => void;
 }
 
-export const usePRActions = ({
+export function usePRActions({
   pullRequestId,
   owner,
   name,
   number,
   onSuccess,
   onError,
-}: UsePRActionsOptions) => {
-  const [submitReview, { loading: submittingReview }] = useMutation(SUBMIT_PR_REVIEW, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
+}: UsePRActionsOptions) {
+  const queryClient = useQueryClient();
+
+  const invalidateQueries = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['prs'] });
+    queryClient.invalidateQueries({ queryKey: ['pr-details'] });
+  }, [queryClient]);
+
+  const approveMutation = useMutation({
+    mutationFn: (body?: string) => api.prs.approve(owner, name, number, pullRequestId, body),
+    onSuccess: () => {
+      invalidateQueries();
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      const err = error instanceof Error ? error : new Error(String(error) || 'Failed to approve PR');
+      onError?.(err);
+    },
   });
 
-  const [addComment, { loading: addingComment }] = useMutation(ADD_PR_COMMENT, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
+  const requestChangesMutation = useMutation({
+    mutationFn: (body: string) => api.prs.requestChanges(owner, name, number, pullRequestId, body),
+    onSuccess: () => {
+      invalidateQueries();
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      const err = error instanceof Error ? error : new Error(String(error) || 'Failed to request changes');
+      onError?.(err);
+    },
   });
 
-  const [mergePR, { loading: merging }] = useMutation(MERGE_PR, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
+  const commentMutation = useMutation({
+    mutationFn: (body: string) => api.prs.comment(owner, name, number, pullRequestId, body),
+    onSuccess: () => {
+      invalidateQueries();
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      const err = error instanceof Error ? error : new Error(String(error) || 'Failed to add comment');
+      onError?.(err);
+    },
   });
 
-  const [closePR, { loading: closing }] = useMutation(CLOSE_PR, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
+  const mergeMutation = useMutation({
+    mutationFn: ({
+      commitHeadline,
+      commitBody,
+      mergeMethod,
+    }: {
+      commitHeadline?: string;
+      commitBody?: string;
+      mergeMethod?: PullRequestMergeMethod;
+    }) =>
+      api.prs.merge(owner, name, number, pullRequestId, {
+        commitHeadline,
+        commitBody,
+        mergeMethod,
+      }),
+    onSuccess: () => {
+      invalidateQueries();
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      const err = error instanceof Error ? error : new Error(String(error) || 'Failed to merge PR');
+      onError?.(err);
+    },
   });
 
-  const [reopenPR, { loading: reopening }] = useMutation(REOPEN_PR, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
+  const closeMutation = useMutation({
+    mutationFn: () => api.prs.close(owner, name, number, pullRequestId),
+    onSuccess: () => {
+      invalidateQueries();
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      const err = error instanceof Error ? error : new Error(String(error) || 'Failed to close PR');
+      onError?.(err);
+    },
   });
 
-  const [addLabels, { loading: addingLabels }] = useMutation(ADD_LABELS_TO_PR, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
+  const reopenMutation = useMutation({
+    mutationFn: () => api.prs.reopen(owner, name, number, pullRequestId),
+    onSuccess: () => {
+      invalidateQueries();
+      onSuccess?.();
+    },
+    onError: (error: unknown) => {
+      const err = error instanceof Error ? error : new Error(String(error) || 'Failed to reopen PR');
+      onError?.(err);
+    },
   });
 
-  const [removeLabels, { loading: removingLabels }] = useMutation(REMOVE_LABELS_FROM_PR, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
-  });
-
-  const [requestReviewers, { loading: requestingReviewers }] = useMutation(REQUEST_REVIEWERS, {
-    refetchQueries: [
-      { query: GET_PR_DETAILS, variables: { owner, name, number } },
-    ],
-    awaitRefetchQueries: true,
-  });
-
-  const handleApprove = useCallback(
+  const approve = useCallback(
     async (body?: string) => {
       try {
-        await submitReview({
-          variables: {
-            pullRequestId,
-            event: 'APPROVE' as PullRequestReviewEvent,
-            body: body || null,
-          },
-        });
-        onSuccess?.();
+        await approveMutation.mutateAsync(body);
       } catch (error) {
-        onError?.(error as Error);
         throw error;
       }
     },
-    [pullRequestId, submitReview, onSuccess, onError]
+    [approveMutation]
   );
 
-  const handleRequestChanges = useCallback(
+  const requestChanges = useCallback(
     async (body: string) => {
       try {
-        await submitReview({
-          variables: {
-            pullRequestId,
-            event: 'REQUEST_CHANGES' as PullRequestReviewEvent,
-            body,
-          },
-        });
-        onSuccess?.();
+        await requestChangesMutation.mutateAsync(body);
       } catch (error) {
-        onError?.(error as Error);
         throw error;
       }
     },
-    [pullRequestId, submitReview, onSuccess, onError]
+    [requestChangesMutation]
   );
 
-  const handleComment = useCallback(
+  const comment = useCallback(
     async (body: string) => {
       try {
-        await addComment({
-          variables: {
-            subjectId: pullRequestId,
-            body,
-          },
-        });
-        onSuccess?.();
+        await commentMutation.mutateAsync(body);
       } catch (error) {
-        onError?.(error as Error);
         throw error;
       }
     },
-    [pullRequestId, addComment, onSuccess, onError]
+    [commentMutation]
   );
 
-  const handleMerge = useCallback(
-    async (method: PullRequestMergeMethod = 'MERGE', commitHeadline?: string) => {
+  const merge = useCallback(
+    async (mergeMethod: PullRequestMergeMethod = 'MERGE', commitHeadline?: string) => {
       try {
-        await mergePR({
-          variables: {
-            pullRequestId,
-            mergeMethod: method,
-            commitHeadline: commitHeadline || null,
-          },
-        });
-        onSuccess?.();
+        await mergeMutation.mutateAsync({ mergeMethod, commitHeadline });
       } catch (error) {
-        onError?.(error as Error);
         throw error;
       }
     },
-    [pullRequestId, mergePR, onSuccess, onError]
+    [mergeMutation]
   );
 
-  const handleClose = useCallback(async () => {
+  const close = useCallback(async () => {
     try {
-      await closePR({
-        variables: {
-          pullRequestId,
-        },
-      });
-      onSuccess?.();
+      await closeMutation.mutateAsync();
     } catch (error) {
-      onError?.(error as Error);
       throw error;
     }
-  }, [pullRequestId, closePR, onSuccess, onError]);
+  }, [closeMutation]);
 
-  const handleReopen = useCallback(async () => {
+  const reopen = useCallback(async () => {
     try {
-      await reopenPR({
-        variables: {
-          pullRequestId,
-        },
-      });
-      onSuccess?.();
+      await reopenMutation.mutateAsync();
     } catch (error) {
-      onError?.(error as Error);
       throw error;
     }
-  }, [pullRequestId, reopenPR, onSuccess, onError]);
+  }, [reopenMutation]);
 
-  const handleAddLabels = useCallback(
-    async (labelIds: string[]) => {
-      try {
-        await addLabels({
-          variables: {
-            labelableId: pullRequestId,
-            labelIds,
-          },
-        });
-        onSuccess?.();
-      } catch (error) {
-        onError?.(error as Error);
-        throw error;
-      }
-    },
-    [pullRequestId, addLabels, onSuccess, onError]
-  );
-
-  const handleRemoveLabels = useCallback(
-    async (labelIds: string[]) => {
-      try {
-        await removeLabels({
-          variables: {
-            labelableId: pullRequestId,
-            labelIds,
-          },
-        });
-        onSuccess?.();
-      } catch (error) {
-        onError?.(error as Error);
-        throw error;
-      }
-    },
-    [pullRequestId, removeLabels, onSuccess, onError]
-  );
-
-  const handleRequestReviewers = useCallback(
-    async (userIds: string[]) => {
-      try {
-        await requestReviewers({
-          variables: {
-            pullRequestId,
-            userIds,
-          },
-        });
-        onSuccess?.();
-      } catch (error) {
-        onError?.(error as Error);
-        throw error;
-      }
-    },
-    [pullRequestId, requestReviewers, onSuccess, onError]
-  );
+  const loading =
+    approveMutation.isPending ||
+    requestChangesMutation.isPending ||
+    commentMutation.isPending ||
+    mergeMutation.isPending ||
+    closeMutation.isPending ||
+    reopenMutation.isPending;
 
   return {
-    approve: handleApprove,
-    requestChanges: handleRequestChanges,
-    comment: handleComment,
-    merge: handleMerge,
-    close: handleClose,
-    reopen: handleReopen,
-    addLabels: handleAddLabels,
-    removeLabels: handleRemoveLabels,
-    requestReviewers: handleRequestReviewers,
-    loading:
-      submittingReview ||
-      addingComment ||
-      merging ||
-      closing ||
-      reopening ||
-      addingLabels ||
-      removingLabels ||
-      requestingReviewers,
+    approve,
+    requestChanges,
+    comment,
+    merge,
+    close,
+    reopen,
+    loading,
   };
-};
+}
 

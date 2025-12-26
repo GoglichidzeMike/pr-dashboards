@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
-import { ApolloProvider } from "@/components/providers/ApolloProvider";
+import { QueryProvider } from "@/components/providers/QueryProvider";
 import { FilterProvider } from "@/contexts/FilterContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { Toaster } from "@/components/ui/sonner";
@@ -34,12 +34,12 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <AuthProvider>
-            <ApolloProvider>
+            <QueryProvider>
               <FilterProvider>
                 {children}
                 <Toaster />
               </FilterProvider>
-            </ApolloProvider>
+            </QueryProvider>
           </AuthProvider>
         </ThemeProvider>
       </body>

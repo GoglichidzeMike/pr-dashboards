@@ -1,15 +1,17 @@
 'use client';
 
-import { PRDetailsFile } from '@/lib/hooks/usePRDetails';
 import { FileText, Plus, Minus } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { PRDetailsFile } from '@/lib/hooks/usePRDetails.old';
+import { useEffect, useState } from 'react';
+import { usePRFileUrl } from '@/lib/hooks/usePRFileUrl';
 
 interface PRFilesProps {
   files: PRDetailsFile[];
+  prUrl: string;
 }
 
-export const PRFiles: React.FC<PRFilesProps> = ({ files }) => {
+export const PRFiles: React.FC<PRFilesProps> = ({ files, prUrl }) => {
   if (files.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
@@ -24,13 +26,13 @@ export const PRFiles: React.FC<PRFilesProps> = ({ files }) => {
   const getChangeTypeBadge = (changeType: string) => {
     switch (changeType) {
       case 'ADDED':
-        return <Badge variant="default" className="bg-green-500">Added</Badge>;
+        return <Badge variant="default" className="bg-green-500 min-w-[75px]">Added</Badge>;
       case 'DELETED':
-        return <Badge variant="destructive">Deleted</Badge>;
+        return <Badge variant="destructive" className=' min-w-[75px]'>Deleted</Badge>;
       case 'MODIFIED':
-        return <Badge variant="secondary">Modified</Badge>;
+        return <Badge variant="secondary" className=' min-w-[75px]'>Modified</Badge>;
       case 'RENAMED':
-        return <Badge variant="outline">Renamed</Badge>;
+        return <Badge variant="outline" className=' min-w-[75px]'>Renamed</Badge>;
       default:
         return null;
     }
@@ -54,27 +56,51 @@ export const PRFiles: React.FC<PRFilesProps> = ({ files }) => {
 
       <div className="space-y-2">
         {files.map((file, index) => (
-          <div
+          <FileLink
             key={`${file.path}-${index}`}
-            className="flex items-center justify-between p-3 rounded-md border hover:bg-accent/50 transition-colors"
-          >
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <FileText className="h-4 w-4 flex-shrink-0 text-muted-foreground" />
-              <span className="text-sm font-mono truncate">{file.path}</span>
-              {getChangeTypeBadge(file.changeType)}
-            </div>
-            <div className="flex items-center gap-3 text-sm flex-shrink-0">
-              {file.additions > 0 && (
-                <span className="text-green-600 dark:text-green-400">+{file.additions}</span>
-              )}
-              {file.deletions > 0 && (
-                <span className="text-red-600 dark:text-red-400">-{file.deletions}</span>
-              )}
-            </div>
-          </div>
+            file={file}
+            prUrl={prUrl}
+            getChangeTypeBadge={getChangeTypeBadge}
+          />
         ))}
       </div>
     </div>
   );
 };
 
+interface FileLinkProps {
+  file: PRDetailsFile;
+  prUrl: string;
+  getChangeTypeBadge: (changeType: string) => React.ReactNode;
+}
+
+const FileLink: React.FC<FileLinkProps> = ({ file, prUrl, getChangeTypeBadge }) => {
+  const fileUrl = usePRFileUrl(file.path, prUrl);
+
+
+  return (
+    <div className="flex items-center justify-between p-3 rounded-md border hover:bg-accent/50 transition-colors">
+      <div className="flex items-center gap-3 flex-1 min-w-0">
+        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <a
+          href={fileUrl || '#'}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm font-mono truncate hover:text-primary hover:underline flex-1 min-w-0"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {file.path}
+        </a>
+        <div className="flex items-center gap-3 text-sm shrink-0">
+          {file.additions > 0 && (
+            <span className="text-green-600 dark:text-green-400">+{file.additions}</span>
+          )}
+          {file.deletions > 0 && (
+            <span className="text-red-600 dark:text-red-400">-{file.deletions}</span>
+          )}
+        </div>
+        {getChangeTypeBadge(file.changeType)}
+      </div>
+    </div>
+  );
+};

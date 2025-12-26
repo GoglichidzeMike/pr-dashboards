@@ -30,7 +30,7 @@ export const LoginButton: React.FC = () => {
     const params = new URLSearchParams({
       client_id: GITHUB_CLIENT_ID,
       redirect_uri: `${APP_URL}/api/auth/callback`,
-      scope: 'read:org repo read:user read:org_membership',
+      scope: 'read:org repo read:user read:org_membership user:email',
       state,
     });
 

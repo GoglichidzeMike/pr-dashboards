@@ -65,11 +65,18 @@ export const PRActions: React.FC<PRActionsProps> = ({ pr, onSuccess }) => {
       setCommentText('');
       setRequestChangesText('');
     },
-    onError: (error) => {
-      console.error('PR action error:', error);
-      toast.error('Action failed', {
-        description: error.message || 'An error occurred while performing this action',
-      });
+    onError: (error: unknown) => {
+      if (error instanceof Error) {
+        console.error('PR action error:', error);
+        toast.error('Action failed', {
+          description: error.message || 'An error occurred while performing this action',
+        });
+      } else {
+        console.error('PR action error:', error);
+        toast.error('Action failed', {
+          description: 'An unknown error occurred while performing this action',
+        });
+      }
     },
   });
 

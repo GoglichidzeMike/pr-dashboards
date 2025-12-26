@@ -1,76 +1,182 @@
-# GitHub PR Dashboard
+# GitHub PR Dashboard - SaaS
 
-A Next.js application for managing GitHub pull requests with real-time updates, advanced filtering, and comprehensive PR information display.
+A production-ready SaaS application for managing GitHub pull requests across multiple repositories and organizations. Built with Next.js, PostgreSQL, Stripe, and deployed on Railway.
+
+## Features
+
+- 🎯 **Unified Dashboard** - View all PRs across multiple repos and orgs in one place
+- ⚡ **Real-time Updates** - Automatic polling with configurable intervals
+- 🔔 **Email Notifications** - Get notified about PR assignments and review requests
+- 💳 **Stripe Billing** - Freemium model with Pro tier
+- 🎨 **Modern UI** - Built with Radix UI and Tailwind CSS
+- 🔒 **Secure** - OAuth authentication with httpOnly cookies
+- 📊 **PR Insights** - Track reviews, CI/CD status, and merge readiness
+
+## Tech Stack
+
+- **Frontend**: Next.js 16, React 19, TanStack Query, Tailwind CSS
+- **Backend**: Next.js API Routes, Prisma ORM
+- **Database**: PostgreSQL
+- **Auth**: GitHub OAuth
+- **Payments**: Stripe
+- **Email**: Resend
+- **Deployment**: Railway
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18.12 or higher
-- pnpm (or npm/yarn)
-- GitHub OAuth App credentials
-
-### Environment Variables
-
-Create a `.env.local` file in the root directory with the following variables:
-
-```bash
-# GitHub OAuth Configuration
-GITHUB_CLIENT_ID=your_github_client_id_here
-GITHUB_CLIENT_SECRET=your_github_client_secret_here
-
-# Application URL (used for OAuth redirects)
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# Optional: GitHub Token for development/testing (for GraphQL codegen)
-GITHUB_TOKEN=your_github_token_here
-```
-
-### Setting up GitHub OAuth App
-
-1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
-2. Click "New OAuth App"
-3. Fill in the application details:
-   - **Application name**: GitHub PR Dashboard (or your preferred name)
-   - **Homepage URL**: `http://localhost:3000` (for development)
-   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback`
-4. Click "Register application"
-5. Copy the **Client ID** and generate a **Client Secret**
-6. Add these to your `.env.local` file
+- Node.js 18.17 or higher
+- pnpm (recommended) or npm
+- PostgreSQL database
+- GitHub OAuth App
+- Stripe account (for billing)
+- Resend account (for emails)
 
 ### Installation
 
-Install dependencies:
+1. Clone the repository:
+```bash
+git clone <your-repo-url>
+cd pr-dashboards
+```
 
+2. Install dependencies:
 ```bash
 pnpm install
 ```
 
-### Running the Development Server
-
-First, run the development server:
-
+3. Set up environment variables:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Edit `.env.local` with your credentials (see Configuration section below).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Set up the database:
+```bash
+pnpm prisma:migrate
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. Run the development server:
+```bash
+pnpm dev
+```
 
-## Learn More
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-To learn more about Next.js, take a look at the following resources:
+## Configuration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+### GitHub OAuth App
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Configure:
+   - **Application name**: Your app name
+   - **Homepage URL**: `http://localhost:3000` (dev) or your production URL
+   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback`
+4. Copy Client ID and Client Secret to `.env.local`
+
+### Stripe Setup
+
+1. Create products and prices in Stripe Dashboard
+2. Copy Secret Key and Price IDs to `.env.local`
+3. Set up webhook endpoint (see DEPLOYMENT.md)
+
+### Resend Setup
+
+1. Sign up at [Resend](https://resend.com)
+2. Get API key and add to `.env.local`
+3. Configure FROM_EMAIL with your verified domain
+
+## Project Structure
+
+```
+src/
+├── app/                    # Next.js app router
+│   ├── api/               # API routes
+│   │   ├── v1/           # REST API endpoints
+│   │   ├── auth/         # Authentication
+│   │   └── webhooks/     # Stripe webhooks
+│   └── (auth)/           # Auth pages
+├── components/            # React components
+│   ├── landing/          # Landing page components
+│   ├── pr/              # PR-related components
+│   ├── sidebar/         # Sidebar components
+│   └── ui/              # UI primitives
+├── contexts/             # React contexts
+├── lib/                  # Utilities
+│   ├── api/             # API client
+│   └── hooks/           # React hooks
+└── server/              # Server-side code
+    ├── auth/            # Auth utilities
+    ├── billing/         # Stripe integration
+    ├── db/              # Database client
+    ├── github/          # GitHub API service
+    └── notifications/   # Email service
+```
+
+## API Endpoints
+
+### User
+- `GET /api/v1/user` - Get current user
+- `PATCH /api/v1/user/preferences` - Update preferences
+
+### Repositories
+- `GET /api/v1/repos` - List user's repositories
+
+### Pull Requests
+- `GET /api/v1/prs?repos=owner/repo1,owner/repo2` - List PRs
+- `GET /api/v1/prs/:owner/:repo/:number` - Get PR details
+- `POST /api/v1/prs/:owner/:repo/:number/approve` - Approve PR
+- `POST /api/v1/prs/:owner/:repo/:number/merge` - Merge PR
+
+### Billing
+- `POST /api/v1/billing/checkout` - Create checkout session
+- `POST /api/v1/billing/portal` - Create portal session
+
+## Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed deployment instructions for Railway.
+
+Quick deploy:
+```bash
+railway login
+railway init
+railway add postgresql
+railway up
+railway run npx prisma migrate deploy
+```
+
+## Scripts
+
+- `pnpm dev` - Start development server
+- `pnpm build` - Build for production
+- `pnpm start` - Start production server
+- `pnpm prisma:migrate` - Run database migrations
+- `pnpm prisma:studio` - Open Prisma Studio
+- `pnpm lint` - Run ESLint
+
+## Pricing Tiers
+
+### Free
+- Up to 5 repositories
+- 30s minimum polling
+- Basic PR management
+
+### Pro ($8/month)
+- Unlimited repositories
+- 10s minimum polling
+- Email notifications
+- Priority support
+
+## Contributing
+
+Contributions are welcome! Please open an issue or submit a pull request.
+
+## License
+
+MIT
 - [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
 You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
