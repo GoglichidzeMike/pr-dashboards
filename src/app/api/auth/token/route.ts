@@ -9,6 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     const cookieStore = await cookies();
     const token = cookieStore.get('github_token')?.value;
+    const expiresAtCookie = cookieStore.get('github_token_expires_at')?.value;
 
     if (!token) {
       return NextResponse.json(
@@ -17,7 +18,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ token });
+    const expiresAt = expiresAtCookie ? parseInt(expiresAtCookie, 10) : null;
+
+    return NextResponse.json({ 
+      token,
+      expiresAt,
+    });
   } catch (error) {
     console.error('Error getting token:', error);
     return NextResponse.json(

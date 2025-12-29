@@ -10,9 +10,10 @@ export async function POST() {
   try {
     const cookieStore = await cookies();
     
-    // Clear both token cookies
     cookieStore.delete('github_token');
     cookieStore.delete('github_token_sync');
+    cookieStore.delete('github_token_expires_at');
+    cookieStore.delete('github_refresh_token');
 
     return NextResponse.json({ success: true });
   } catch (error) {

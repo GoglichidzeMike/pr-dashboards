@@ -3,6 +3,8 @@
  * Uses httpOnly cookies for server-side, localStorage for client-side fallback
  */
 
+import { setTokenExpiration } from './tokenExpiration';
+
 const TOKEN_KEY = 'github_token';
 
 /**
@@ -24,10 +26,17 @@ export function getToken(): string | null {
     if (syncCookie) {
       token = syncCookie.split('=')[1];
       if (token) {
-        // Sync to localStorage
         localStorage.setItem(TOKEN_KEY, token);
-        // Clear the sync cookie
         document.cookie = 'github_token_sync=; path=/; max-age=0';
+      }
+    }
+    
+    const expiresAtCookie = cookies.find(c => c.trim().startsWith('github_token_expires_at='));
+    if (expiresAtCookie) {
+      const expiresAt = parseInt(expiresAtCookie.split('=')[1], 10);
+      if (expiresAt && !isNaN(expiresAt)) {
+        setTokenExpiration(expiresAt);
+        document.cookie = 'github_token_expires_at=; path=/; max-age=0';
       }
     }
   }
@@ -78,6 +87,9 @@ export async function syncTokenFromAPI(): Promise<void> {
       const data = await response.json();
       if (data.token) {
         setToken(data.token);
+      }
+      if (data.expiresAt) {
+        setTokenExpiration(data.expiresAt);
       }
     }
   } catch (error) {

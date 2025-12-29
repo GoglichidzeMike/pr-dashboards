@@ -1,7 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
 import { getToken, removeToken, syncTokenFromAPI, isAuthenticated } from '@/lib/storage/token';
+import {
+  setTokenExpiration,
+  removeTokenExpiration,
+  isTokenExpired,
+  getTimeUntilExpiration,
+} from '@/lib/storage/tokenExpiration';
 
 interface AuthContextType {
   token: string | null;
@@ -16,43 +22,133 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setTokenState] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const refreshIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize token on mount
+  const syncExpirationFromCookie = useCallback(() => {
+    if (typeof window === 'undefined') return;
+
+    const cookies = document.cookie.split(';');
+    const expiresAtCookie = cookies.find((c) => c.trim().startsWith('github_token_expires_at='));
+    if (expiresAtCookie) {
+      const expiresAt = parseInt(expiresAtCookie.split('=')[1], 10);
+      if (expiresAt && !isNaN(expiresAt)) {
+        setTokenExpiration(expiresAt);
+        document.cookie = 'github_token_expires_at=; path=/; max-age=0';
+      }
+    }
+  }, []);
+
+  const performTokenRefresh = useCallback(async (): Promise<boolean> => {
+    try {
+      const response = await fetch('/api/auth/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.expiresAt) {
+          setTokenExpiration(data.expiresAt);
+        }
+        await syncTokenFromAPI();
+        const newToken = getToken();
+        setTokenState(newToken);
+        return true;
+      } else {
+        const errorData = await response.json();
+        if (errorData.requiresReauth) {
+          removeToken();
+          removeTokenExpiration();
+          setTokenState(null);
+        }
+        return false;
+      }
+    } catch (error) {
+      console.error('Token refresh failed:', error);
+      return false;
+    }
+  }, []);
+
+  const setupRefreshInterval = useCallback(() => {
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+    }
+
+    const timeUntilExpiration = getTimeUntilExpiration();
+    if (!timeUntilExpiration || timeUntilExpiration <= 0) {
+      return;
+    }
+
+    const refreshTime = Math.max(timeUntilExpiration - 10 * 60 * 1000, 5 * 60 * 1000);
+
+    refreshIntervalRef.current = setTimeout(async () => {
+      const expired = isTokenExpired();
+      if (expired || !getToken()) {
+        await performTokenRefresh();
+      }
+      setupRefreshInterval();
+    }, refreshTime);
+  }, [performTokenRefresh]);
+
   useEffect(() => {
     const initializeAuth = async () => {
       setIsLoading(true);
-      
-      // First check localStorage
+
       let currentToken = getToken();
-      
-      // If no token, try to sync from API (cookie)
+
       if (!currentToken) {
         await syncTokenFromAPI();
         currentToken = getToken();
       }
-      
+
+      syncExpirationFromCookie();
+
+      if (currentToken) {
+        const expired = isTokenExpired();
+        if (expired) {
+          const refreshed = await performTokenRefresh();
+          if (!refreshed) {
+            currentToken = null;
+          } else {
+            currentToken = getToken();
+          }
+        } else {
+          setupRefreshInterval();
+        }
+      }
+
       setTokenState(currentToken);
       setIsLoading(false);
     };
 
     initializeAuth();
-  }, []);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearTimeout(refreshIntervalRef.current);
+      }
+    };
+  }, [syncExpirationFromCookie, performTokenRefresh, setupRefreshInterval]);
 
   const refreshToken = useCallback(async () => {
-    await syncTokenFromAPI();
-    const newToken = getToken();
-    setTokenState(newToken);
-  }, []);
+    await performTokenRefresh();
+    setupRefreshInterval();
+  }, [performTokenRefresh, setupRefreshInterval]);
 
   const logout = useCallback(async () => {
+    if (refreshIntervalRef.current) {
+      clearTimeout(refreshIntervalRef.current);
+    }
+
     try {
-      // Call logout API to clear server-side cookies
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch (error) {
       console.error('Logout API error:', error);
     } finally {
-      // Clear client-side token
       removeToken();
+      removeTokenExpiration();
       setTokenState(null);
     }
   }, []);
@@ -75,4 +171,3 @@ export const useAuth = (): AuthContextType => {
   }
   return context;
 };
-

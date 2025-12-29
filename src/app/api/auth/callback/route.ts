@@ -14,23 +14,17 @@ export async function GET(request: NextRequest) {
 
   // Handle OAuth errors
   if (error) {
-    return NextResponse.redirect(
-      new URL(`/login?error=${encodeURIComponent(error)}`, APP_URL)
-    );
+    return NextResponse.redirect(new URL(`/login?error=${encodeURIComponent(error)}`, APP_URL));
   }
 
   // Validate required parameters
   if (!code) {
-    return NextResponse.redirect(
-      new URL('/login?error=missing_code', APP_URL)
-    );
+    return NextResponse.redirect(new URL('/login?error=missing_code', APP_URL));
   }
 
   if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
     console.error('Missing GitHub OAuth credentials');
-    return NextResponse.redirect(
-      new URL('/login?error=server_config', APP_URL)
-    );
+    return NextResponse.redirect(new URL('/login?error=server_config', APP_URL));
   }
 
   try {
@@ -57,11 +51,17 @@ export async function GET(request: NextRequest) {
 
     if (tokenData.error) {
       return NextResponse.redirect(
-        new URL(`/login?error=${encodeURIComponent(tokenData.error_description || tokenData.error)}`, APP_URL)
+        new URL(
+          `/login?error=${encodeURIComponent(tokenData.error_description || tokenData.error)}`,
+          APP_URL
+        )
       );
     }
 
     const accessToken = tokenData.access_token;
+    const refreshToken = tokenData.refresh_token;
+    const expiresIn = tokenData.expires_in || 60 * 60 * 24 * 30;
+    const tokenExpiresAt = Date.now() + expiresIn * 1000;
 
     if (!accessToken) {
       throw new Error('No access token received');
@@ -91,7 +91,11 @@ export async function GET(request: NextRequest) {
       });
 
       if (emailsResponse.ok) {
-        const emails = await emailsResponse.json() as Array<{ email: string; primary: boolean; verified: boolean }>;
+        const emails = (await emailsResponse.json()) as Array<{
+          email: string;
+          primary: boolean;
+          verified: boolean;
+        }>;
         const primaryEmail = emails.find((e) => e.primary && e.verified);
         if (primaryEmail) {
           userEmail = primaryEmail.email;
@@ -122,11 +126,13 @@ export async function GET(request: NextRequest) {
     });
 
     const cookieStore = await cookies();
+    const maxAge = expiresIn;
+
     cookieStore.set('github_token', accessToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge,
       path: '/',
     });
 
@@ -134,16 +140,31 @@ export async function GET(request: NextRequest) {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
-      maxAge: 60 * 60 * 24 * 30,
+      maxAge,
       path: '/',
     });
+
+    cookieStore.set('github_token_expires_at', tokenExpiresAt.toString(), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge,
+      path: '/',
+    });
+
+    if (refreshToken) {
+      cookieStore.set('github_refresh_token', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365,
+        path: '/',
+      });
+    }
 
     return NextResponse.redirect(new URL('/', APP_URL));
   } catch (error) {
     console.error('OAuth callback error:', error);
-    return NextResponse.redirect(
-      new URL('/login?error=oauth_failed', APP_URL)
-    );
+    return NextResponse.redirect(new URL('/login?error=oauth_failed', APP_URL));
   }
 }
-
